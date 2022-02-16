@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>teste sqlite</title>
+    <style>
+        body {
+            background-color: lightgrey;
+            color: blue;
+        }
+        h1 {
+            background-color: lightgrey;
+            color: black;
+        }
+        div {
+            background-color: lightgrey;
+            color: black;
+        }
+        p {
+            font-family: 'Courier New', Courier, monospace;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Meus Textos</h1>
+    <div id = "saida"></div>
+
+    <form action="" method="post">
+        Titulo: <input type="text" name="" id="myTitle"><br><br>
+        Texto:<textarea name="" cols="100" rows="10" id="myText"></textarea><br><br> 
+        <input type="submit" value="Gravar" id="mySubmit" onclick="insertNewPost();"><br><br>
+    </form>
+
+    <script type = "text/javascript">
+
+        createNewDatabase();
+        readAllPosts();
+
+        //-- cria o banco de dados
+        function createNewDatabase()
+        {
+            var mydb = openDatabase('myDb', '1.0', 'padawan database', 1024 * 1024);
+            mydb.transaction(function (tx) { 
+                tx.executeSql('CREATE TABLE IF NOT EXISTS myPOSTS (title, text)'); 
+            });
+            
+        }
+
+        //-- inserir um novo POST no BD criado
+        function insertNewPost()
+        {
+            //-- seleciona os dados do formulario
+            var myTitle = document.getElementById("myTitle").value;
+            var myText  = document.getElementById('myText').value;
+
+            //-- grava os dados
+            var mydb = openDatabase('myDb', '1.0', 'padawan database', 1024 * 1024);
+            mydb.transaction(function (tx) { 
+                tx.executeSql('INSERT INTO myPOSTS (title, text) VALUES (?,?)', [myTitle, myText]);
+            });
+            readAllPosts();
+        }
+
+        //-- le todos os post e mostra na tela
+        function readAllPosts()
+        {
+
+            var mydb = openDatabase('myDb', '1.0', 'padawan database', 1024 * 1024);
+            
+            mydb.transaction(function (tx) { 
+                tx.executeSql('SELECT * FROM myPOSTS', [], function (tx, results) { 
+        
+                    for (i = 0; i < results.rows.length; i++) { 
+                        var titulo = JSON.stringify(results.rows.item(i)["title"]); 
+                        var texto = JSON.stringify(results.rows.item(i)["text"]); 
+                        var novo = '<h2>' + titulo + '</h2><p>' + texto + '</p>';
+                        document.querySelector('#saida').innerHTML +=  novo; 
+                    } 
+
+            }, null); 
+        }); 
+        }
+
+     </script>
+</body>
+</html>
